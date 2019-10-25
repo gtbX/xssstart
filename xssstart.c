@@ -72,6 +72,7 @@ main(int argc, char *argv[])
 	XEvent		 ev;
 	struct sigaction act = { };
 	int		 evbase, errbase, argi, deargi = -1;
+	char	   	 laststate = -1;
 
 	for (argi = 1; argi < argc; argi++) {
 		if (strcmp(argv[argi], "--") == 0) {
@@ -98,8 +99,9 @@ main(int argc, char *argv[])
 			continue;
 		switch (((XScreenSaverNotifyEvent *)&ev)->state) {
 		case ScreenSaverOn:
-			if (deargi == 2)
+			if (deargi == 2 || (deargi > 2 && laststate == 1))
 				continue;
+			laststate = 1;
 			switch ((child = fork())) {
 			case -1:
 				err(1, "fork");
@@ -110,8 +112,9 @@ main(int argc, char *argv[])
 			}
 			break;
 		case ScreenSaverOff:
-			if (deargi < 0)
+			if (deargi < 0 || (deargi > 2 && laststate == 0))
 				continue;
+			laststate = 0;
 			switch ((child = fork())) {
 			case -1:
 				err(1, "fork");
