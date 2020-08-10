@@ -66,6 +66,19 @@ sigchld(int sig)
 	}
 }
 
+static void
+run(const char* cmd, char *const argv[])
+{
+	switch ((child = fork())) {
+	case -1:
+		err(1, "fork");
+	case 0:
+		execvp(cmd, argv);
+		dpy = NULL;
+		err(1, "exec");
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -102,27 +115,13 @@ main(int argc, char *argv[])
 			if (deargi == 2 || (deargi > 2 && laststate == 1))
 				continue;
 			laststate = 1;
-			switch ((child = fork())) {
-			case -1:
-				err(1, "fork");
-			case 0:
-				execvp(argv[1], argv + 1);
-				dpy = NULL;
-				err(1, "exec");
-			}
+			run(argv[1], argv + 1);
 			break;
 		case ScreenSaverOff:
 			if (deargi < 0 || (deargi > 2 && laststate == 0))
 				continue;
 			laststate = 0;
-			switch ((child = fork())) {
-			case -1:
-				err(1, "fork");
-			case 0:
-				execvp(argv[deargi], argv + deargi);
-				dpy = NULL;
-				err(1, "exec");
-			}
+			run(argv[deargi], argv + deargi);
 			break;
 		}
 	}
