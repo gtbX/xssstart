@@ -69,6 +69,8 @@ sigchld(int sig)
 static void
 run(const char* cmd, char *const argv[])
 {
+	if (child != 0)
+		return;
 	switch ((child = fork())) {
 	case -1:
 		err(1, "fork");
@@ -108,20 +110,20 @@ main(int argc, char *argv[])
 	if (sigaction(SIGCHLD, &act, NULL) == -1)
 		err(1, "sigaction");
 	while (XNextEvent(dpy, &ev) == 0) {
-		if (child != 0)
-			continue;
 		switch (((XScreenSaverNotifyEvent *)&ev)->state) {
 		case ScreenSaverOn:
-			if (deargi == 2 || (deargi > 2 && laststate == 1))
+			if (laststate == 1)
 				continue;
 			laststate = 1;
-			run(argv[1], argv + 1);
+			if (deargi > 2)
+				run(argv[1], argv + 1);
 			break;
 		case ScreenSaverOff:
-			if (deargi < 0 || (deargi > 2 && laststate == 0))
+			if (laststate == 0)
 				continue;
 			laststate = 0;
-			run(argv[deargi], argv + deargi);
+			if (deargi > 0)
+				run(argv[deargi], argv + deargi);
 			break;
 		}
 	}
