@@ -115,7 +115,7 @@ main(int argc, char *argv[])
 			if (laststate == 1)
 				continue;
 			laststate = 1;
-			if (deargi > 2)
+			if (deargi != 1)
 				run(argv[1], argv + 1);
 			break;
 		case ScreenSaverOff:
